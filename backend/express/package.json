@@ -1,0 +1,25 @@
+{
+  "name": "pipopipette-backend",
+  "version": "1.0.0",
+  "description": "",
+  "homepage": "",
+  "bugs": {
+    "url": ""
+  },
+  "repository": {},
+  "license": "",
+  "author": "Samuel Rigaud",
+  "main": "app.js",
+  "scripts": {
+    "test": "test",
+    "start": "node app.js DEBUG=*",
+    "dev": "nodemon app.js"
+  },
+  "dependencies": {
+    "express": "4.17.1",
+    "socket.io": "4.0.1"
+  },
+  "devDependencies": {
+    "nodemon": "2.0.4"
+  }
+}
