@@ -7,12 +7,13 @@ const JoinGame = (props) => {
 
   const { gameId } = useParams()
 
-  const joinGame = async() => {
+  const joinGame = () => {
     socket.emit("playerJoinGame", gameId)
     socket.on("update grid size", (response) =>{
       props.setGridSize(response.gridSize)
     })
   }
+
   props.setGameId(gameId)
 
   React.useEffect(() => {joinGame()}, [])

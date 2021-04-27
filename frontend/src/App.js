@@ -26,7 +26,12 @@ function App() {
   }
 
   const addOpponentScore = (points) => {
-    setOpponentScore(score + points)
+    setOpponentScore(opponentScore + points)
+  }
+
+  const copyToClipboard = () => {
+    document.getElementById("invitation-link").select()
+    document.execCommand("copy")
   }
 
   return (
@@ -49,9 +54,10 @@ function App() {
                 {isOwner?
                   <p>
                     <b>Send this link to your friend to start playing: </b>
-                    <a href={"http://localhost:3000/game/" + gameId + "/join"} target="_blank" rel="noreferrer">
-                      { "http://localhost:3000/game/" + gameId + "/join"}
-                    </a>
+                    <input id="invitation-link" value={"http://localhost:3000/game/" + gameId + "/join"}/>
+                    <button onClick={copyToClipboard}>
+                      <img src="assets/save-icon.png" alt="Copy to clipboard"/>
+                    </button>
                   </p>
                   :
                   <p></p>
@@ -60,7 +66,6 @@ function App() {
                 <BoardWrapper
                   gameId={gameId}
                   gridSize={gridSize}
-                  isOwner={isOwner}
                   isPlayerTurn={isPlayerTurn}
                   setIsplayerTurn={setIsplayerTurn}
                   setError={setError}

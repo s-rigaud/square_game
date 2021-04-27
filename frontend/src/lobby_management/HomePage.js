@@ -8,7 +8,7 @@ const HomePage = (props) => {
 
   const [localGridSize, setLocalGridSize] = React.useState(props.gridSize)
 
-  const createGame = async() => {
+  const createGame = () => {
     props.setIsOwner(true)
     props.setGridSize(localGridSize)
 
@@ -19,19 +19,20 @@ const HomePage = (props) => {
 
   return (
     <div>
-      <h1>Game creator</h1>
+      <h1 className={"hover_effect typing-demo"}>Game creator</h1>
+      <p>Select grid size:</p>
       <input
-        placeholder='5'
+        placeholder='4'
         value={localGridSize}
         onChange={e => setLocalGridSize(e.target.value)}
       />
-      <p>Current grid size: {localGridSize}</p>
+      <br/>
       <button
-        className="btn btn-primary"
+        className="btn create-btn"
         onClick={() => {createGame()}}
         disabled = {localGridSize < 2 || localGridSize > 9}
       >
-        Create Game
+        Create new game
       </button>
     </div>
   )

@@ -16,6 +16,7 @@ class Board extends React.Component {
   // Handle Bar displaying UI, board generation and call to API
 
   componentDidMount() {
+    this.props.setGreyBars(this.states.game.blankBars)
     socket.on("error", statusUpdate => {
       console.log(statusUpdate)
       alert(statusUpdate)
@@ -27,11 +28,15 @@ class Board extends React.Component {
       const [success, message] = this.states.game.isValidMove(action.move, false)
       if(success){
         this.props.setError("")
-        // this.props.playOpponentMoveSound()
-        this.props.setIsplayerTurn(true)
-
         const scoredPoints = this.states.game.opponentPlay(action.move)
-        this.props.addOpponentScore(scoredPoints)
+        if(scoredPoints){
+          this.props.addOpponentScore(scoredPoints)
+          // this.props.playOpponentMoveSound()
+        }else{
+          this.props.setIsplayerTurn(true)
+        }
+        this.updateBars()
+
       }else{
         this.props.setError(message)
       }
@@ -39,22 +44,32 @@ class Board extends React.Component {
   }
 
   states = {
-    game: new Game(this.props.gridSize),
+    game: new Game(this.props.gridSize)
   }
 
-  play = async(position) => {
+  play = (position) => {
     const [success, message] = this.states.game.isValidMove(position, true)
     if (this.props.isPlayerTurn && success){
       this.props.setError("")
-      socket.emit("new move", {move: position, gameId: this.props.gameId})
-      // this.props.playMoveSound()
-      this.props.setIsplayerTurn(false)
-
       const scoredPoints = this.states.game.play(position)
-      this.props.addScore(scoredPoints)
+      if (scoredPoints){
+        this.props.addScore(scoredPoints)
+        // this.props.playMoveSound()
+      }else{
+        this.props.setIsplayerTurn(false)
+      }
+      this.updateBars()
+      socket.emit("new move", {move: position, gameId: this.states.gameId})
+
     }else if(!success){
       this.props.setError(message)
     }
+  }
+
+  updateBars = () => {
+    this.props.setGreyBars(this.states.game.blankBars)
+    this.props.setGreenBars(this.states.game.myBars)
+    this.props.setRedBars(this.states.game.opposantBars)
   }
 
   getOrientationForBar = (bar) => {
@@ -75,7 +90,6 @@ class Board extends React.Component {
       x = ((bar % (2 * gr + 1) - gr) * 60) + 20
       y = (Math.floor(bar / (2 * gr + 1)) * 60) + 20
     }
-    console.log([x, y])
     return [x, y]
   }
 
@@ -88,7 +102,7 @@ class Board extends React.Component {
       >
         <Stage width = {720} height = {720}>
           <Layer>
-            {this.states.game.blankBars.map(bar => {
+            {this.props.greyBars.map(bar => {
               return (
                 <Bar
                   key={bar}
@@ -102,24 +116,26 @@ class Board extends React.Component {
                 />
               )
             })}
-            {this.states.game.myBars.map(bar => {
+            {this.props.greenBars.map(bar => {
               return (
                 <Bar
                   key={bar}
                   index={bar}
                   orientation={this.getOrientationForBar(bar)}
+                  position = {this.getPositionForBar(bar)}
                   color = "green"
                   gridSize={this.props.gridSize}
                   callbackFunction={() => {}}
                 />
               )
             })}
-            {this.states.game.opposantBars.map(bar => {
+            {this.props.redBars.map(bar => {
               return (
                 <Bar
                   key={bar}
                   index={bar}
                   orientation={this.getOrientationForBar(bar)}
+                  position = {this.getPositionForBar(bar)}
                   color = "red"
                   gridSize={this.props.gridSize}
                   callbackFunction={() => {}}
@@ -138,17 +154,29 @@ const BoardWrapper = (props) => {
   const [playMoveSound] = useSound(moveSound)
   const [playOpponentMoveSound] = useSound(opponentMoveSound)
 
+  const [greyBars, setGreyBars] = React.useState([])
+  const [redBars, setRedBars] = React.useState([])
+  const [greenBars, setGreenBars] = React.useState([])
+
   return <Board
     gameId={props.gameId}
     gridSize={props.gridSize}
-    isOwner={props.isOwner}
     isPlayerTurn={props.isPlayerTurn}
+
     setIsplayerTurn={props.setIsplayerTurn}
     setError={props.setError}
     addScore={props.addScore}
     addOpponentScore={props.addOpponentScore}
+
     playMoveSound = {playMoveSound}
     playOpponentMoveSound = {playOpponentMoveSound}
+
+    greyBars={greyBars}
+    redBars ={redBars}
+    greenBars={greenBars}
+    setGreyBars={setGreyBars}
+    setRedBars={setRedBars}
+    setGreenBars={setGreenBars}
   />
 }
 

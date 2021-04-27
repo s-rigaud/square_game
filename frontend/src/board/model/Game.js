@@ -17,15 +17,15 @@ class Game {
     }
 
     play(position){
-      this.myBars.push(position)
-      this.blankBars = this.blankBars.filter(pos => pos !== position)
+      this.myBars = [...this.myBars, position]
+      this.blankBars = [...this.blankBars.filter(pos => pos !== position)]
       this.updateEndGame()
       return this.computeNewPoints(position)
     }
 
     opponentPlay(position){
-      this.opposantBars.push(position)
-      this.blankBars = this.blankBars.filter(pos => pos !== position)
+      this.opposantBars = [...this.opposantBars, position]
+      this.blankBars = [...this.blankBars.filter(pos => pos !== position)]
       this.updateEndGame()
       return this.computeNewPoints(position)
     }
@@ -39,46 +39,53 @@ class Game {
       let score = 0
       const alredyPlayedMoves = this.myBars.concat(this.opposantBars)
 
-      if (
-        alredyPlayedMoves.indexOf(move-1) > -1
-        && alredyPlayedMoves.indexOf(move+this.gridSize) > -1
-        && alredyPlayedMoves.indexOf(move-this.gridSize-1) > -1
-      ){
-          //       ╔═══╗
-          //       ║   ¦
-          //       ╚═══╝
-          score += 1
-      }
-      if (
-        alredyPlayedMoves.indexOf(move+1) > -1
-        && alredyPlayedMoves.indexOf(move-this.gridSize) > -1
-        && alredyPlayedMoves.indexOf(move+this.gridSize+1) > -1
-      ){
-          //       ╔═══╗
-          //       ¦   ║
-          //       ╚═══╝
-          score += 1
-      }
-
-      if (
-        alredyPlayedMoves.indexOf(move+this.gridSize) > -1
-        && alredyPlayedMoves.indexOf(move+this.gridSize+1) > -1
-        && alredyPlayedMoves.indexOf(move+2*this.gridSize+1) > -1
-      ){
-          //       ╔─ ─╗
-          //       ║   ║
-          //       ╚═══╝
-          score += 1
-      }
-      if (
-        alredyPlayedMoves.indexOf(move-this.gridSize) > -1
-        && alredyPlayedMoves.indexOf(move-this.gridSize-1) > -1
-        && alredyPlayedMoves.indexOf(move-2*this.gridSize-1) > -1
-      ){
-          //       ╔═══╗
-          //       ║   ║
-          //       ╚─ ─╝
-          score += 1
+      // If bar is vertical
+      if(move % (2* this.gridSize + 1) >= this.gridSize){
+        if (
+          alredyPlayedMoves.indexOf(move-1) > -1
+          && alredyPlayedMoves.indexOf(move+this.gridSize) > -1
+          && alredyPlayedMoves.indexOf(move-this.gridSize-1) > -1
+        ){
+            //       ╔═══╗
+            //       ║   ¦
+            //       ╚═══╝
+            score += 1
+            console.log("Right bar placed")
+        }
+        if (
+          alredyPlayedMoves.indexOf(move+1) > -1
+          && alredyPlayedMoves.indexOf(move-this.gridSize) > -1
+          && alredyPlayedMoves.indexOf(move+this.gridSize+1) > -1
+        ){
+            //       ╔═══╗
+            //       ¦   ║
+            //       ╚═══╝
+            score += 1
+            console.log("Left bar placed")
+        }
+      }else{
+        if (
+          alredyPlayedMoves.indexOf(move+this.gridSize) > -1
+          && alredyPlayedMoves.indexOf(move+this.gridSize+1) > -1
+          && alredyPlayedMoves.indexOf(move+2*this.gridSize+1) > -1
+        ){
+            //       ╔─ ─╗
+            //       ║   ║
+            //       ╚═══╝
+            score += 1
+            console.log("Top bar placed")
+        }
+        if (
+          alredyPlayedMoves.indexOf(move-this.gridSize) > -1
+          && alredyPlayedMoves.indexOf(move-this.gridSize-1) > -1
+          && alredyPlayedMoves.indexOf(move-2*this.gridSize-1) > -1
+        ){
+            //       ╔═══╗
+            //       ║   ║
+            //       ╚─ ─╝
+            score += 1
+            console.log("Bottom bar placed")
+        }
       }
       return score
     }
@@ -91,10 +98,6 @@ class Game {
       let message = ""
       if(this.ended)
         message = "The game is over"
-      else if(isCurrentPlayerMove && this.myBars.length > this.opposantBars.length)
-        message = `You can't play, it's not your turn`
-      else if(!isCurrentPlayerMove && this.myBars.length < this.opposantBars.length)
-        message = `Other player can't play, it's your turn`
 
       if(isNaN(parseInt(move)))
         message = "Move is not valid. It should be a valid number"
