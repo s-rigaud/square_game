@@ -1,12 +1,12 @@
 import { Rect } from 'react-konva'
 
-const Bar = (props) => {
+const Square = (props) => {
   // Basic Bar representation
   // This class handle UI (color change) and call to given callback function
 
   const [x, y] = props.position
-  const width = props.orientation === "v" ? 10 : 40
-  const height = props.orientation === "v" ? 40 : 10
+  const width = 50
+  const height = 50
 
   return (
       <Rect
@@ -15,9 +15,8 @@ const Bar = (props) => {
         width = {width}
         height = {height}
         fill={props.color}
-        onClick={() => {props.callbackFunction()}}
       />
   )
 }
 
-export default Bar
+export default Square

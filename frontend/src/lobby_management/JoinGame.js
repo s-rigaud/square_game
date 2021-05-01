@@ -10,11 +10,10 @@ const JoinGame = (props) => {
   const joinGame = () => {
     socket.emit("playerJoinGame", gameId)
     socket.on("update grid size", (response) =>{
-      props.setGridSize(response.gridSize)
+      props.setGridSize(response.gridSize); props.setGameId(gameId)
     })
   }
-
-  props.setGameId(gameId)
+  props.setIsOpponentConnected(true)
 
   React.useEffect(() => {joinGame()}, [])
   return <Redirect to = "/" />

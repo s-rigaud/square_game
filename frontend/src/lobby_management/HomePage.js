@@ -1,42 +1,63 @@
 import React from 'react'
-import { v4 as uuidv4 } from 'uuid';
+
+import { Label } from 'semantic-ui-react'
+
+import grid4 from '../assets/4x4.png'
+import grid6 from '../assets/6x6.png'
+import grid9 from '../assets/9x9.png'
+
 const socket  = require('../connection/socket').socket
 
 
-const HomePage = (props) => {
+class HomePage extends React.Component{
   // Main page to create a game
 
-  const [localGridSize, setLocalGridSize] = React.useState(props.gridSize)
-
-  const createGame = () => {
-    props.setIsOwner(true)
-    props.setGridSize(localGridSize)
-
-    const gameId = uuidv4()
-    props.setGameId(gameId)
-    socket.emit('createNewGame', {gameId: gameId, gridSize: localGridSize})
+  createGame = () => {
+    const gameId = `${Math.floor(100000 + Math.random() * 900000)}`
+    this.props.setGameId(gameId)
+    socket.emit('createNewGame', {gameId: gameId, gridSize: this.props.gridSize})
   }
 
-  return (
-    <div>
-      <h1 className={"hover_effect typing-demo"}>Game creator</h1>
-      <p>Select grid size:</p>
-      <input
-        placeholder='4'
-        value={localGridSize}
-        onChange={e => setLocalGridSize(e.target.value)}
-      />
-      <br/>
-      <button
-        className="btn create-btn"
-        onClick={() => {createGame()}}
-        disabled = {localGridSize < 2 || localGridSize > 9}
-      >
-        Create new game
-      </button>
-    </div>
-  )
+  states = {
+    grid : {"4": grid4, "6": grid6, "9": grid9}
+  }
 
+  render(){
+    return (
+      <div>
+        <h1 className={"hover_effect typing-demo"}>Game creator</h1>
+        <p>Select your grid size</p>
+        {[4, 6, 9].map(size => {
+          return (
+            <React.Fragment key={size}>
+              <Label
+                as='a'
+                color='red'
+                ribbon
+                className={`${this.props.gridSize === size? "" : "ribbon-unselected"}`}
+              >
+                {size}
+              </Label>
+              <img
+                value={size}
+                src={this.states.grid[size]}
+                className={`radio-box ${this.props.gridSize === size? "box-selected" : ""}`}
+                onClick={() => this.props.setGridSize(size)}
+                alt={size}
+              />
+            </React.Fragment>
+          )
+        })}
+        <br/>
+        <button
+          className="btn create-btn"
+          onClick={() => {this.createGame()}}
+        >
+          Create new {this.props.gridSize +"x"+this.props.gridSize} game
+        </button>
+      </div>
+    )
+  }
 }
 
 export default HomePage

@@ -1,10 +1,15 @@
 import React from 'react'
 
-import { Stage, Layer } from 'react-konva'
 import useSound from 'use-sound'
+import { Stage, Layer } from 'react-konva'
+import { Input, Loader } from 'semantic-ui-react'
 
 import Bar from './Bar'
-import Game from '../model/Game'
+import Dot from './Dot'
+import Square from './Square'
+import BoardModal from './BoardModal'
+import GameState from '../model/GameState'
+
 import moveSound from '../../assets/whoa.mp3'
 import opponentMoveSound from '../../assets/ok.mp3'
 
@@ -12,8 +17,7 @@ const socket  = require('../../connection/socket').socket
 
 
 class Board extends React.Component {
-  // Common Game manager
-  // Handle Bar displaying UI, board generation and call to API
+  // Handle Bar displaying UI, board generation
 
   componentDidMount() {
     this.props.setGreyBars(this.states.game.blankBars)
@@ -23,19 +27,22 @@ class Board extends React.Component {
     })
     socket.on("start game", statusUpdate => {
       this.props.setIsplayerTurn(true)
+      this.props.setIsOpponentConnected(true)
     })
     socket.on("opponent move", action => {
-      const [success, message] = this.states.game.isValidMove(action.move, false)
+      const [success, message] = this.states.game.isValidMove(action.move)
       if(success){
         this.props.setError("")
         const scoredPoints = this.states.game.opponentPlay(action.move)
         if(scoredPoints){
-          this.props.addOpponentScore(scoredPoints)
+          this.props.setOpponentScore(this.props.opponentScore + scoredPoints)
           // this.props.playOpponentMoveSound()
         }else{
           this.props.setIsplayerTurn(true)
         }
-        this.updateBars()
+
+        this.updateBarsAndSquares()
+        this.updateOnEndGame()
 
       }else{
         this.props.setError(message)
@@ -43,22 +50,36 @@ class Board extends React.Component {
     })
   }
 
+  generateGridDots = () => {
+    let dots = []
+    for(let i = 0; i < this.props.gridSize + 1; i++){
+      for(let j = 0; j < this.props.gridSize + 1; j++){
+        dots.push([i*60 + 20, j*60 +5])
+      }
+    }
+    return dots
+  }
+
   states = {
-    game: new Game(this.props.gridSize)
+    game: new GameState(this.props.gridSize),
+    dots : this.generateGridDots(),
   }
 
   play = (position) => {
-    const [success, message] = this.states.game.isValidMove(position, true)
+    const [success, message] = this.states.game.isValidMove(position)
     if (this.props.isPlayerTurn && success){
       this.props.setError("")
+      console.log(this.states.game)
       const scoredPoints = this.states.game.play(position)
+      console.log(this.states.game)
       if (scoredPoints){
-        this.props.addScore(scoredPoints)
+        this.props.setScore(this.props.score + scoredPoints)
         // this.props.playMoveSound()
       }else{
         this.props.setIsplayerTurn(false)
       }
-      this.updateBars()
+      this.updateBarsAndSquares()
+      this.updateOnEndGame()
       socket.emit("new move", {move: position, gameId: this.states.gameId})
 
     }else if(!success){
@@ -66,10 +87,28 @@ class Board extends React.Component {
     }
   }
 
-  updateBars = () => {
+  playAgain = () => {
+    // TODO fix using setState
+    this.states.game = new GameState(this.props.gridSize)
+    this.updateBarsAndSquares()
+    this.props.setScore(0)
+    this.props.setOpponentScore(0)
+  }
+
+  updateBarsAndSquares = () => {
     this.props.setGreyBars(this.states.game.blankBars)
     this.props.setGreenBars(this.states.game.myBars)
     this.props.setRedBars(this.states.game.opposantBars)
+
+    this.props.setGreenSquares(this.states.game.mySquares)
+    this.props.setRedSquares(this.states.game.opposantSquares)
+  }
+
+  updateOnEndGame = () => {
+    if(this.states.game.ended){
+      this.props.setIsFirstGame(false)
+      this.props.setIsOpponentConnected(false)
+    }
   }
 
   getOrientationForBar = (bar) => {
@@ -93,63 +132,144 @@ class Board extends React.Component {
     return [x, y]
   }
 
+  getPositionForSquare = (square) => {
+    let [x, y] = square
+    x = x*60 +30
+    y = y*60 +15
+    return [x, y]
+  }
+
+  copyToClipboard = () => {
+    const linkInput = document.getElementById("invitation-link")
+    linkInput.select()
+    document.execCommand("copy")
+    linkInput.selected = false;
+  }
+
   render() {
     return (
-      <div
-        style={{
-          backgroundColor: "#f39c12",
-        }}
-      >
-        <Stage width = {720} height = {720}>
-          <Layer>
-            {this.props.greyBars.map(bar => {
-              return (
-                <Bar
-                  key={bar}
-                  index={bar}
-                  orientation={this.getOrientationForBar(bar)}
-                  position = {this.getPositionForBar(bar)}
-                  color = "grey"
-                  gridSize={this.props.gridSize}
-                  // Only blank bars are clickable
-                  callbackFunction={() => {this.play(bar)}}
-                />
-              )
-            })}
-            {this.props.greenBars.map(bar => {
-              return (
-                <Bar
-                  key={bar}
-                  index={bar}
-                  orientation={this.getOrientationForBar(bar)}
-                  position = {this.getPositionForBar(bar)}
-                  color = "green"
-                  gridSize={this.props.gridSize}
-                  callbackFunction={() => {}}
-                />
-              )
-            })}
-            {this.props.redBars.map(bar => {
-              return (
-                <Bar
-                  key={bar}
-                  index={bar}
-                  orientation={this.getOrientationForBar(bar)}
-                  position = {this.getPositionForBar(bar)}
-                  color = "red"
-                  gridSize={this.props.gridSize}
-                  callbackFunction={() => {}}
-                />
-              )
-            })}
-          </Layer>
-        </Stage>
-      </div>
+      <React.Fragment>
+        {this.props.isOpponentConnected || !this.props.isFirstGame?
+          <React.Fragment>
+            {this.props.isPlayerTurn?
+              <h2 style={{color: "green"}}>My turn</h2>
+              :
+              <h2 style={{color: "red"}}>Not my turn</h2>
+            }
+            <BoardModal
+                open={this.states.game.ended}
+                actionCallback={this.playAgain}
+                score={this.props.score}
+                opponentScore={this.props.opponentScore}
+            />
+            <div
+              style={{
+                backgroundColor: "#f39c12",
+              }}
+            >
+              <Stage width = {this.props.gridSize*70} height = {this.props.gridSize*70}>
+                <Layer>
+                  {this.props.greyBars.map(bar => {
+                    return (
+                      <Bar
+                        key={bar}
+                        index={bar}
+                        orientation={this.getOrientationForBar(bar)}
+                        position = {this.getPositionForBar(bar)}
+                        color = "grey"
+                        gridSize={this.props.gridSize}
+                        // Only blank bars are clickable
+                        callbackFunction={() => this.play(bar)}
+                      />
+                    )
+                  })}
+                  {this.props.greenBars.map(bar => {
+                    return (
+                      <Bar
+                        key={bar}
+                        index={bar}
+                        orientation={this.getOrientationForBar(bar)}
+                        position = {this.getPositionForBar(bar)}
+                        color = "green"
+                        gridSize={this.props.gridSize}
+                        callbackFunction={() => {}}
+                      />
+                    )
+                  })}
+                  {this.props.redBars.map(bar => {
+                    return (
+                      <Bar
+                        key={bar}
+                        index={bar}
+                        orientation = {this.getOrientationForBar(bar)}
+                        position = {this.getPositionForBar(bar)}
+                        color = "red"
+                        gridSize={this.props.gridSize}
+                        callbackFunction={() => {}}
+                      />
+                    )
+                  })}
+                  {this.states.dots.map(dot => {
+                    return (
+                      <Dot
+                        key={dot}
+                        position = {dot}
+                      />
+                    )
+                  })}
+                  {this.props.greenSquares.map(square => {
+                    return (
+                      <Square
+                        key = {`s${square}`}
+                        position = {this.getPositionForSquare(square)}
+                        color = "green"
+                      />
+                    )
+                  })}
+                  {this.props.redSquares.map(square => {
+                    return (
+                      <Square
+                        key = {`s${square}`}
+                        position = {this.getPositionForSquare(square)}
+                        color = "red"
+                      />
+                    )
+                  })}
+                </Layer>
+              </Stage>
+            </div>
+          </React.Fragment>
+          :
+          <React.Fragment>
+            <h1>Waiting for your friend</h1>
+            <Loader active inline />
+            <br/>
+            <br/>
+            <br/>
+            <b>Send this link to your friend to start playing</b>
+            <br/>
+            <Input
+              id="invitation-link"
+              action={{
+                color: 'teal',
+                labelPosition: 'right',
+                icon: 'copy',
+                content: 'Copy',
+                onClick: this.copyToClipboard,
+              }}
+              size='large'
+              value={"http://localhost:3000/game/" + this.props.gameId + "/join"}
+            />
+          </React.Fragment>
+        }
+      </React.Fragment>
     )
   }
 }
 
 const BoardWrapper = (props) => {
+
+  const [isPlayerTurn, setIsplayerTurn] = React.useState(false)
 
   const [playMoveSound] = useSound(moveSound)
   const [playOpponentMoveSound] = useSound(opponentMoveSound)
@@ -157,16 +277,28 @@ const BoardWrapper = (props) => {
   const [greyBars, setGreyBars] = React.useState([])
   const [redBars, setRedBars] = React.useState([])
   const [greenBars, setGreenBars] = React.useState([])
+  const [greenSquares, setGreenSquares] = React.useState([])
+  const [redSquares, setRedSquares] = React.useState([])
 
   return <Board
     gameId={props.gameId}
     gridSize={props.gridSize}
-    isPlayerTurn={props.isPlayerTurn}
+    isPlayerTurn={isPlayerTurn}
+    setIsplayerTurn={setIsplayerTurn}
 
-    setIsplayerTurn={props.setIsplayerTurn}
     setError={props.setError}
-    addScore={props.addScore}
-    addOpponentScore={props.addOpponentScore}
+
+    isOpponentConnected={props.isOpponentConnected}
+    setIsOpponentConnected={props.setIsOpponentConnected}
+
+    score={props.score}
+    setScore={props.setScore}
+
+    opponentScore={props.opponentScore}
+    setOpponentScore={props.setOpponentScore}
+
+    isFirstGame={props.isFirstGame}
+    setIsFirstGame={props.setIsFirstGame}
 
     playMoveSound = {playMoveSound}
     playOpponentMoveSound = {playOpponentMoveSound}
@@ -177,6 +309,11 @@ const BoardWrapper = (props) => {
     setGreyBars={setGreyBars}
     setRedBars={setRedBars}
     setGreenBars={setGreenBars}
+  
+    greenSquares={greenSquares}
+    setGreenSquares={setGreenSquares}
+    redSquares={redSquares}
+    setRedSquares={setRedSquares}
   />
 }
 

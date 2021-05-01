@@ -61,7 +61,7 @@ function newMove(move) {
 // Received when a user close the browser ?
 function onDisconnect() {
     var i = gameSessions.indexOf(gameSocket)
-    console.log(`User ${gameSocket} disconnected`)
+    console.log(`Player disconnected`)
     gameSessions.splice(i, 1)
 }
 
