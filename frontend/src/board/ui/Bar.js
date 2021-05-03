@@ -5,8 +5,8 @@ const Bar = (props) => {
   // This class handle UI (color change) and call to given callback function
 
   const [x, y] = props.position
-  const width = props.orientation === "v" ? 10 : 40
-  const height = props.orientation === "v" ? 40 : 10
+  const width = props.orientation === "v" ? 10 : 50
+  const height = props.orientation === "v" ? 50 : 10
 
   return (
       <Rect
