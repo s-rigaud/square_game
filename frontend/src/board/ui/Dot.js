@@ -13,6 +13,11 @@ const Dot = (props) => {
         width = {10}
         height = {10}
         fill={"black"}
+        shadowColor="black"
+        shadowBlur={10}
+        shadowOpacity={0.4}
+        shadowOffsetX={2}
+        shadowOffsetY={2}
       />
   )
 }

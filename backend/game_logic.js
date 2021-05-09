@@ -15,13 +15,15 @@ const initializeGame = (socket_io, socket) => {
     gameSessions.push(gameSocket)
 
     gameSocket.on("disconnect", onDisconnect)
+
     gameSocket.on("new move", newMove)
     gameSocket.on("createNewGame", createNewGame)
     gameSocket.on("playerJoinGame", playerJoinGame)
+    gameSocket.on("play again", playAgain)
 }
 
 // Received when creator makes the lobby
-function createNewGame(gameInfo) {
+function createNewGame(gameInfo){
     gameId = gameInfo.gameId
     this.emit("createNewGame", {gameId: gameId, gridSize: gameInfo.gridSize})
     gridSizeMapping[gameId] = gameInfo.gridSize
@@ -30,7 +32,7 @@ function createNewGame(gameInfo) {
 }
 
 // Received when one of the player enter the lobby
-function playerJoinGame(gameId) {
+function playerJoinGame(gameId){
     var room = io.sockets.adapter.rooms.get(gameId)
 
     if (room === undefined) {
@@ -51,15 +53,33 @@ function playerJoinGame(gameId) {
     }
 }
 
+// Received when the first game is over and user wants to replay
+function playAgain(gameId){
+    var room = io.sockets.adapter.rooms.get(gameId)
+
+    if (room === undefined) {
+        this.emit("error" , "This game session does not exist anymore" )
+        return
+    }
+
+    console.log("A player wants an other game with id " + gameId)
+    if (room.size == 2) {
+        // Sending "play again" to other player
+        io.sockets.to(getOpponentSocketId(room, this.id)).emit("play again", gameId)
+    } else {
+        this.emit("error" , "The opponent already left")
+    }
+}
+
 // Received when a player make a move
-function newMove(move) {
+function newMove(move){
     const room = io.sockets.adapter.rooms.get(gameId)
     console.log(`Game ${gameId}: New move '${move.move}'`)
     io.to(getOpponentSocketId(room, this.id)).emit("opponent move", move)
 }
 
 // Received when a user close the browser ?
-function onDisconnect() {
+function onDisconnect(){
     var i = gameSessions.indexOf(gameSocket)
     console.log(`Player disconnected`)
     gameSessions.splice(i, 1)

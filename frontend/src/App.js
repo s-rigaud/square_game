@@ -1,4 +1,4 @@
-import React from 'react'
+import {useState} from 'react'
 import './App.css'
 
 import 'semantic-ui-css/semantic.min.css'
@@ -14,19 +14,19 @@ function App() {
   // Main app entry point
   // Handle url route logic and share property with components
 
-  const [gameId, setGameId] = React.useState("")
-  const [gridSize, setGridSize] = React.useState(4)
+  const [gameId, setGameId] = useState("")
+  const [gridSize, setGridSize] = useState(4)
 
-  const [score, setScore] = React.useState(0)
-  const [opponentScore, setOpponentScore] = React.useState(0)
-  const [isFirstGame, setIsFirstGame] = React.useState(true)
+  const [score, setScore] = useState(0)
+  const [opponentScore, setOpponentScore] = useState(0)
+  const [isFirstGame, setIsFirstGame] = useState(true)
+  const [doesPlayerStarted, setDoesPlayerStarted] = useState("")
 
-  // TODO ReadMe + Doc + Dots on the game board
-  const [isOpponentConnected, setIsOpponentConnected] = React.useState(false)
-  const [error, setError] = React.useState("")
+  const [isOpponentConnected, setIsOpponentConnected] = useState(false)
+  const [error, setError] = useState("")
 
   // Return Board if the player created the game or joined it
-  // Else return the HomePage
+  // else return the HomePage
   return (
     <div>
       <p style={{color: "red"}}>{error}</p>
@@ -45,10 +45,14 @@ function App() {
                     gameId={gameId}
                     gridSize={gridSize}
                     setError={setError}
-                    isOpponentConnected={isOpponentConnected}
+
                     isFirstGame={isFirstGame}
                     setIsFirstGame={setIsFirstGame}
+                    isOpponentConnected={isOpponentConnected}
                     setIsOpponentConnected={setIsOpponentConnected}
+                    doesPlayerStarted={doesPlayerStarted}
+                    setDoesPlayerStarted={setDoesPlayerStarted}
+
                     score={score}
                     setScore={setScore}
                     opponentScore={opponentScore}
@@ -62,6 +66,7 @@ function App() {
                   gridSize={gridSize}
                   setGameId={setGameId}
                   setGridSize={setGridSize}
+                  setDoesPlayerStarted={setDoesPlayerStarted}
                 />
               }
             </Route>
@@ -71,6 +76,7 @@ function App() {
                 setGridSize={setGridSize}
                 setGameId={setGameId}
                 setIsOpponentConnected={setIsOpponentConnected}
+                setDoesPlayerStarted={setDoesPlayerStarted}
               />
             </Route>
 

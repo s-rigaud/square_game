@@ -1,12 +1,16 @@
-import React from 'react'
+import {useState} from 'react'
 
-import { Button, Modal, Image } from 'semantic-ui-react'
+import { Button, Modal, Image, Icon } from 'semantic-ui-react'
 
 import winImage from '../../assets/win.png'
 import drawImage from '../../assets/draw.png'
 import loseImage from '../../assets/lose.png'
 
+
+// Endgame modal used to recapitulate score and ask for another game
 const BoardModal = (props) => {
+
+  const [loading, setLoading] = useState(false)
 
   const isWin = () => {
     return props.score > props.opponentScore
@@ -23,10 +27,10 @@ const BoardModal = (props) => {
   return (
     <Modal
       closeOnDocumentClick={true}
-      centered={true}
       size={"large"}
       open={props.open}
-      mountNode={document.getElementById("root")}
+      centered={false}
+      onMount={() => setLoading(false)}
     >
       <Modal.Header>{"You " +(isWin()? "won !": isDraw()? "draw": "lost") }</Modal.Header>
       <Modal.Content image>
@@ -45,10 +49,22 @@ const BoardModal = (props) => {
         </Modal.Description>
       </Modal.Content>
       <Modal.Actions>
-          <Button onClick={() => {window.location = "/"}}>Back to game creation</Button>
-          <Button onClick={props.actionCallback} positive>
-            Play again
-          </Button>
+        <Button animated onClick={() => {window.location = "/"}}>
+          <Button.Content visible>Back to game creation</Button.Content>
+          <Button.Content hidden>
+            <Icon name='home' />
+            <Icon name='long arrow alternate left' />
+          </Button.Content>
+        </Button>
+
+        <Button animated onClick={() => {setLoading(true); props.replayCallback()}} positive loading={loading}>
+          <Button.Content visible>Play again</Button.Content>
+          <Button.Content hidden>
+            <Icon name='trophy' />
+            <Icon name='gamepad' />
+            <Icon name='trophy' />
+          </Button.Content>
+        </Button>
       </Modal.Actions>
     </Modal>
   )

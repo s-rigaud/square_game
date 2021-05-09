@@ -15,6 +15,7 @@ class HomePage extends React.Component{
   createGame = () => {
     const gameId = `${Math.floor(100000 + Math.random() * 900000)}`
     this.props.setGameId(gameId)
+    this.props.setDoesPlayerStarted(true)
     socket.emit('createNewGame', {gameId: gameId, gridSize: this.props.gridSize})
   }
 
@@ -32,7 +33,7 @@ class HomePage extends React.Component{
             <React.Fragment key={size}>
               <Label
                 as='a'
-                color='red'
+                color={size === 4? "green" : size === 6? "teal" : "blue"}
                 ribbon
                 className={`${this.props.gridSize === size? "" : "ribbon-unselected"}`}
               >

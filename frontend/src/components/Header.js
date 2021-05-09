@@ -2,6 +2,8 @@ import React from 'react'
 
 import { Button, Icon } from 'semantic-ui-react'
 
+// Main header of the page
+// It only display usefull infos
 class Header extends React.Component{
 
     isWin = () => {
@@ -30,7 +32,12 @@ class Header extends React.Component{
                                 <Icon name='gamepad' />
                                 Game id : {this.props.gameId}
                             </Button>
-                            <Button color={(this.isWin()? "green": this.isDraw()? "grey": "red")}>
+                            <Button
+                                id={
+                                    (this.isWin()? "green-button": this.isDraw()? "grey-button": "red-button")
+                                }
+                                className="header-button"
+                            >
                                 <Icon name='trophy' />
                                 Score : {this.props.score+" - "+this.props.opponentScore}
                             </Button>

@@ -1,8 +1,9 @@
 body{
-  -webkit-user-select: none; /* Safari */        
+  -webkit-user-select: none; /* Safari */
   -moz-user-select: none; /* Firefox */
   -ms-user-select: none; /* IE10+/Edge */
   user-select: none; /* Standard */
+  overflow: hidden;
 }
 
 header{
@@ -167,13 +168,13 @@ h1::before {
 
 .ribbon {
   position: relative !important;
-  top: -85px !important;
+  top: -65px !important;
   left: 32px !important;
 }
 
 .ribbon-unselected {
   position: relative !important;
-  top: -85px !important;
+  top: -65px !important;
   left: 36px !important;
 }
 
@@ -181,7 +182,7 @@ h1::before {
 #color-button{
   padding: 8px;
   margin: 8px;
-  border-radius: 10px;
+  border-radius: 5px;
   border: none;
   font-weight: 600;
 }
@@ -190,4 +191,96 @@ h1::before {
 .bar:hover{
   transform: rotateX(90);
   cursor: pointer;
+}
+
+/* For board canvas */
+canvas{
+  cursor: pointer;
+}
+
+/* Modal */
+.modal{
+  height: auto !important;
+  top: auto !important;
+  left: auto !important;
+}
+
+/* Waiting animation */
+.lds-ellipsis {
+  display: inline-block;
+  position: relative;
+  width: 80px;
+  height: 30px;
+}
+.lds-ellipsis div {
+  position: absolute;
+  top: 15px;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: red;
+  animation-timing-function: cubic-bezier(0, 1, 1, 0);
+}
+.lds-ellipsis div:nth-child(1) {
+  left: 8px;
+  animation: lds-ellipsis1 1s infinite;
+  margin-bottom: 15px;
+
+}
+.lds-ellipsis div:nth-child(2) {
+  left: 8px;
+  animation: lds-ellipsis2 1s infinite;
+}
+.lds-ellipsis div:nth-child(3) {
+  left: 32px;
+  animation: lds-ellipsis2 1s infinite;
+}
+.lds-ellipsis div:nth-child(4) {
+  left: 56px;
+  animation: lds-ellipsis3 1s infinite;
+}
+@keyframes lds-ellipsis1 {
+  0% {
+    transform: scale(0);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes lds-ellipsis2 {
+  0% {
+    transform: translate(0, 0);
+  }
+  100% {
+    transform: translate(24px, 0);
+  }
+}
+
+@keyframes lds-ellipsis3 {
+  0% {
+    transform: scale(1);
+  }
+  100% {
+    transform: scale(0);
+  }
+}
+
+/* header button for score*/
+.header-button{
+  color: white !important;
+  transition: color 3s, background-color 3s;
+}
+
+#green-button{
+  background-color: #24d138;
+}
+
+#red-button{
+  background-color: crimson;
+}
+
+#grey-button{
+  color: #5c5c5c !important;
+  background-color: gainsboro;
 }
